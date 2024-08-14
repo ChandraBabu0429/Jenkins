@@ -1,5 +1,5 @@
 pipeline {
-    agent any  // Use the Jenkins node, not a Docker container
+    agent any
 
     stages {
         stage('Checkout') {
@@ -11,8 +11,8 @@ pipeline {
         stage('Build') {
             agent {
                 docker {
-                    image 'node:16'  // Use the official Node.js Docker image for building
-                    args '-u root'   // Run as root user inside the container
+                    image 'node:16'
+                    args '-u root'
                 }
             }
             steps {
@@ -23,8 +23,8 @@ pipeline {
         stage('Test') {
             agent {
                 docker {
-                    image 'node:16'  // Use the official Node.js Docker image for testing
-                    args '-u root'   // Run as root user inside the container
+                    image 'node:16'
+                    args '-u root'
                 }
             }
             steps {
@@ -32,21 +32,26 @@ pipeline {
             }
         }
 
-        stage('Docker Build & Push') {
+        stage('Docker Build') {
             steps {
                 script {
+                    // Build the Docker image locally
                     def dockerImage = docker.build("chandu0616/nodejs-app:${env.BUILD_ID}")
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials-id') {
-                        dockerImage.push()
-                    }
                 }
             }
         }
 
         stage('Deploy') {
             steps {
-                // Run the Docker container, mapping to port 8082 on your host machine
-                sh 'docker run -d -p 8082:8080 chandu0616/nodejs-app:${env.BUILD_ID}'
+                script {
+                    // Run the Docker container locally, mapping to port 8082 on your host machine
+                    sh 'docker run -d -p 8082:8080 chandu0616/nodejs-app:${env.BUILD_ID}'
+
+                    // Optionally, you can add health checks or other commands to verify the application is running
+                    // For example, you can use curl to check if the application is accessible
+                    sh 'sleep 10'  // Give it a few seconds to start up
+                    sh 'curl -I http://localhost:8082'
+                }
             }
         }
     }
