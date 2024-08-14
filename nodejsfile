@@ -4,56 +4,11 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'git@github.com:YourGitHubUser/YourRepo.git'
+                git branch: 'master', url: 'git@github.com:ChandraBabu0429/Jenkins.git', credentialsId: 'github-ssh-key'
             }
         }
 
-        stage('Build') {
-            agent {
-                docker {
-                    image 'node:14'
-                    args '-u root'
-                }
-            }
-            steps {
-                sh 'npm install'
-            }
-        }
-
-        stage('Test') {
-            agent {
-                docker {
-                    image 'node:14'
-                    args '-u root'
-                }
-            }
-            steps {
-                sh 'npm test'
-            }
-        }
-
-        stage('Docker Build') {
-            steps {
-                script {
-                    def dockerImage = docker.build("your-dockerhub-username/nodejs-app:${env.BUILD_ID}")
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                script {
-                    sh '''
-                    #!/bin/bash
-                    docker run -d -p 8080:8080 your-dockerhub-username/nodejs-app:${env.BUILD_ID}
-                    sleep 5
-
-                    # Check if the container is running
-                    docker ps || echo "No running containers"
-                    '''
-                }
-            }
-        }
+        // Other stages...
     }
 
     post {
