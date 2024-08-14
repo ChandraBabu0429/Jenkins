@@ -4,14 +4,14 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'git@github.com:ChandraBabu0429/Jenkins.git'
+                git branch: 'master', url: 'git@github.com:YourGitHubUser/YourRepo.git'
             }
         }
 
         stage('Build') {
             agent {
                 docker {
-                    image 'node:16'
+                    image 'node:14'
                     args '-u root'
                 }
             }
@@ -23,7 +23,7 @@ pipeline {
         stage('Test') {
             agent {
                 docker {
-                    image 'node:16'
+                    image 'node:14'
                     args '-u root'
                 }
             }
@@ -35,7 +35,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    def dockerImage = docker.build("chandu0616/nodejs-app:${env.BUILD_ID}")
+                    def dockerImage = docker.build("your-dockerhub-username/nodejs-app:${env.BUILD_ID}")
                 }
             }
         }
@@ -43,11 +43,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Use Bash explicitly
                     sh '''
                     #!/bin/bash
-                    docker run -d -p 8082:8080 chandu0616/nodejs-app:${env.BUILD_ID} || echo "Failed to start container"
-                    sleep 5  # Give some time for the container to start
+                    docker run -d -p 8080:8080 your-dockerhub-username/nodejs-app:${env.BUILD_ID}
+                    sleep 5
 
                     # Check if the container is running
                     docker ps || echo "No running containers"
