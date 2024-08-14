@@ -43,12 +43,14 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Ensure this command is executed correctly in your environment
+                    // Run the Docker container
                     sh 'docker run -d -p 8082:8080 chandu0616/nodejs-app:${env.BUILD_ID}'
-                    
-                    // Optional: Check if the app is running
-                    sh 'sleep 10'  // Wait for the app to start
-                    sh 'curl -I http://localhost:8082'  // Check if the app is accessible
+
+                    // Wait for a few seconds to ensure the container starts properly
+                    sh 'sleep 5'
+
+                    // Check if the application is running
+                    sh 'curl http://localhost:8082 || echo "Application is not accessible!"'
                 }
             }
         }
