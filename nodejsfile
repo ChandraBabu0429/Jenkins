@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/YourUsername/nodejs-docker-app.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'npm test'
+            }
+        }
+
+        stage('Docker Build & Push') {
+            steps {
+                script {
+                    def dockerImage = docker.build("yourdockerhubusername/nodejs-app:${env.BUILD_ID}")
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials-id') {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                // Run the Docker container, mapping to port 8082 on your host machine
+                sh 'docker run -d -p 8082:8080 yourdockerhubusername/nodejs-app:${env.BUILD_ID}'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Cleaning up...'
+            deleteDir()
+        }
+    }
+}
+
